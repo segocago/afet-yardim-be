@@ -23,14 +23,14 @@ public class SiteController {
 
   private final SiteService siteService;
 
-  @PostMapping("")
+  @PostMapping
   public Site createSite(@RequestBody Site newSite) {
     newSite.setId(0);
     newSite.setCreateDateTime(null);
     return siteService.createSite(newSite);
   }
 
-  @GetMapping("")
+  @GetMapping
   public Collection<SiteListDTO> getSites(@RequestParam Optional<String> cityFilter) {
     Collection<Site> sites = siteService.getSites(cityFilter);
     return convertModelsToDTO(sites);
