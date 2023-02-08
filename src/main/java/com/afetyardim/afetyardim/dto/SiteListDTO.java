@@ -2,6 +2,7 @@ package com.afetyardim.afetyardim.dto;
 
 import com.afetyardim.afetyardim.model.Location;
 import com.afetyardim.afetyardim.model.SiteStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import lombok.Setter;
 public class SiteListDTO {
   private long id;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime createDateTime;
 
   private String name;

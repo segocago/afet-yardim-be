@@ -1,6 +1,7 @@
 package com.afetyardim.afetyardim.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -29,6 +30,7 @@ public class Site {
   private long id;
 
   @CreationTimestamp
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime createDateTime;
 
   private String name;
