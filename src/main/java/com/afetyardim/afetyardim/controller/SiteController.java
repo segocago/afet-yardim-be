@@ -1,6 +1,6 @@
 package com.afetyardim.afetyardim.controller;
 
-import com.afetyardim.afetyardim.SiteListDTO;
+import com.afetyardim.afetyardim.dto.SiteListDTO;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.service.SiteService;
@@ -61,6 +61,7 @@ public class SiteController {
     siteListDTO.setOrganizer(site.getOrganizer());
     siteListDTO.setDescription(site.getOrganizer());
     siteListDTO.setContactInformation(site.getContactInformation());
+    siteListDTO.setLastSiteStatus(site.getLastSiteStatus());
     return siteListDTO;
   }
 
