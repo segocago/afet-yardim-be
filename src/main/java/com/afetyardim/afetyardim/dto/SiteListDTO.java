@@ -1,6 +1,7 @@
-package com.afetyardim.afetyardim;
+package com.afetyardim.afetyardim.dto;
 
 import com.afetyardim.afetyardim.model.Location;
+import com.afetyardim.afetyardim.model.SiteStatus;
 import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,4 +24,6 @@ public class SiteListDTO {
   private String description;
 
   private String contactInformation;
+
+  private SiteStatus lastSiteStatus;
 }

@@ -2,6 +2,7 @@ package com.afetyardim.afetyardim.service;
 
 
 import com.afetyardim.afetyardim.model.Site;
+import com.afetyardim.afetyardim.model.SiteStatus;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.repository.SiteRepository;
 import com.afetyardim.afetyardim.repository.SiteUpdateRepository;
@@ -34,6 +35,10 @@ public class SiteService {
   public SiteUpdate addSiteUpdate(long siteId, SiteUpdate newSiteUpdate) {
     Site site = getSite(siteId);
     newSiteUpdate.setSite(site);
+
+    if (newSiteUpdate.getSiteStatus() != SiteStatus.DEFAULT) {
+      site.setLastSiteStatus(newSiteUpdate.getSiteStatus());
+    }
     return siteUpdateRepository.save(newSiteUpdate);
   }
 
