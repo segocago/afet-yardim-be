@@ -4,8 +4,8 @@ package com.afetyardim.afetyardim.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -52,7 +52,7 @@ public class Site {
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb")
-  private Set<SiteUpdate> updates = new HashSet<>();
+  private List<SiteUpdate> updates = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   private SiteStatus lastSiteStatus = SiteStatus.DEFAULT;
@@ -61,7 +61,7 @@ public class Site {
 
   public void addSiteUpdate(SiteUpdate siteUpdate) {
     if (getUpdates() == null) {
-      updates = new HashSet<>();
+      updates = new ArrayList<>();
     }
     updates.add(siteUpdate);
 
