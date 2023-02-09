@@ -3,6 +3,9 @@ package com.afetyardim.afetyardim.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +19,7 @@ public class SiteUpdate {
 
   private String update;
 
-  private SiteStatus siteStatus = SiteStatus.DEFAULT;
+  private List<SiteStatus> siteStatus = new ArrayList<>();
 
 
 }
