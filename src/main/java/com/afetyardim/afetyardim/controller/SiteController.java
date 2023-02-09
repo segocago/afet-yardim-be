@@ -3,11 +3,17 @@ package com.afetyardim.afetyardim.controller;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.service.SiteService;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/sites")
@@ -35,9 +41,8 @@ public class SiteController {
   }
 
   @PostMapping("/{siteId}/updates")
-  public SiteUpdate addSiteUpdate(@PathVariable long siteId, @RequestBody SiteUpdate newSiteUpdate) {
-    newSiteUpdate.setId(0);
-    newSiteUpdate.setCreateDateTime(null);
+  public Site addSiteUpdate(@PathVariable long siteId, @RequestBody SiteUpdate newSiteUpdate) {
+    newSiteUpdate.setCreateDateTime(LocalDateTime.now());
     return siteService.addSiteUpdate(siteId, newSiteUpdate);
   }
 

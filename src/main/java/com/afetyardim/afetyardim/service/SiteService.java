@@ -5,7 +5,6 @@ import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteStatus;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.repository.SiteRepository;
-import com.afetyardim.afetyardim.repository.SiteUpdateRepository;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -16,8 +15,6 @@ import org.springframework.stereotype.Service;
 public class SiteService {
 
   private final SiteRepository siteRepository;
-
-  private final SiteUpdateRepository siteUpdateRepository;
 
   public Site createSite(Site newSite) {
     return siteRepository.save(newSite);
@@ -32,14 +29,13 @@ public class SiteService {
     return siteRepository.findAll();
   }
 
-  public SiteUpdate addSiteUpdate(long siteId, SiteUpdate newSiteUpdate) {
+  public Site addSiteUpdate(long siteId, SiteUpdate newSiteUpdate) {
     Site site = getSite(siteId);
-    newSiteUpdate.setSite(site);
-
+    site.addSiteUpdate(newSiteUpdate);
     if (newSiteUpdate.getSiteStatus() != SiteStatus.DEFAULT) {
       site.setLastSiteStatus(newSiteUpdate.getSiteStatus());
     }
-    return siteUpdateRepository.save(newSiteUpdate);
+    return siteRepository.save(site);
   }
 
   public Site getSite(long siteId) {
