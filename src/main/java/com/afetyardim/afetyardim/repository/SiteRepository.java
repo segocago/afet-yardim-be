@@ -9,4 +9,10 @@ import org.springframework.stereotype.Repository;
 public interface SiteRepository extends JpaRepository<Site, Long> {
 
   Set<Site> findByLocationCity(String city);
+
+  Set<Site> findByLocationCityAndVerified(String city, boolean verified);
+
+  Set<Site> findByVerified(boolean verified);
+
+
 }

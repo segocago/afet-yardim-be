@@ -30,8 +30,8 @@ public class SiteController {
   }
 
   @GetMapping
-  public Collection<Site> getSites(@RequestParam Optional<String> cityFilter) {
-    Collection<Site> sites = siteService.getSites(cityFilter);
+  public Collection<Site> getSites(@RequestParam Optional<String> cityFilter, Optional<Boolean> verifiedFilter) {
+    Collection<Site> sites = siteService.getSites(cityFilter, verifiedFilter);
     return sites;
   }
 

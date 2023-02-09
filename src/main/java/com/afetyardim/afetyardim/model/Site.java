@@ -57,7 +57,7 @@ public class Site {
   @Enumerated(EnumType.STRING)
   private SiteStatus lastSiteStatus = SiteStatus.DEFAULT;
 
-  private boolean isVerified = false;
+  private boolean verified = false;
 
   public void addSiteUpdate(SiteUpdate siteUpdate) {
     if (getUpdates() == null) {
