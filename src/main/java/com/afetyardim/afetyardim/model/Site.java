@@ -14,6 +14,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,6 +27,7 @@ import org.hibernate.annotations.TypeDef;
 @Getter
 @Setter
 @TypeDef(name = "json", typeClass = JsonType.class)
+@Table(indexes = @Index(name = "city_index", columnList = "city"))
 public class Site {
 
   @Id
