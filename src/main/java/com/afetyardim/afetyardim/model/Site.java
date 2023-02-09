@@ -57,6 +57,9 @@ public class Site {
   @Enumerated(EnumType.STRING)
   private SiteStatus lastSiteStatus = SiteStatus.DEFAULT;
 
+  @Enumerated(EnumType.STRING)
+  private SiteType type = SiteType.SUPPLY;
+
   private boolean verified = false;
 
   public void addSiteUpdate(SiteUpdate siteUpdate) {
