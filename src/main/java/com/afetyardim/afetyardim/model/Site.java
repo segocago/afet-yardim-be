@@ -46,6 +46,7 @@ public class Site {
 
   private String organizer;
 
+  @Column(length = 1024)
   private String description;
 
   private String contactInformation;
