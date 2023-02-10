@@ -49,4 +49,8 @@ public class SiteService {
     }
     return site.get();
   }
+
+  public void updateAllSites(Collection<Site> sites) {
+    siteRepository.saveAll(sites);
+  }
 }

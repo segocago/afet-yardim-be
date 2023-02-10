@@ -1,12 +1,15 @@
 package com.afetyardim.afetyardim.service;
 
 import com.afetyardim.afetyardim.model.Site;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.afetyardim.afetyardim.model.SiteStatus;
+import com.afetyardim.afetyardim.model.SiteStatusType;
+import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import java.io.IOException;
@@ -14,50 +17,177 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleSheetsService {
 
   @Value("${google.api.key}")
   private String API_KEY;
 
-  private final static ObjectMapper mapper = new ObjectMapper();
-
   private final SiteService siteService;
 
+  private final static String ANKARA_SPREAD_SHEET_ID = "1TT7DbGj6F6BN10PS0PkSLAXXLyX9i-ILlBEs70X-Lac";
 
-  //İsim,aktiflik,malzeme,insan,gıda,koli,not
-  public List<Site> getValues(String spreadsheetId, String range) throws IOException {
+  //TODO: Increase spread sheet range
+  private final static String ANKARA_SPREAD_SHEET_RANGE = "A1:H100";
+
+
+  public void updateSitesForAnkaraSpreadSheet() throws IOException {
+
+    log.info("Start ankara spread sheet update");
 
     Collection<Site> ankaraSites = siteService.getSites(Optional.of("Ankara"), Optional.empty());
-    Spreadsheet spreadsheet = getSpreadSheet(spreadsheetId, range);
+    Spreadsheet spreadsheet = getSpreadSheet(ANKARA_SPREAD_SHEET_ID, ANKARA_SPREAD_SHEET_RANGE);
 
     List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
     rows.remove(0);
 
-    return rows.stream().map(rowData -> {
-      return convertRowDataToSite(rowData, ankaraSites);
-    }).toList();
+    rows.stream().forEach(rowData -> {
+      try {
+        updateAnkaraSiteForTheRow(rowData, ankaraSites);
+      } catch (Exception exception) {
 
+        String siteName = "COULD_NOT_COMPUTE_SITE_NAME";
+        try {
+          String calculatedSiteName = (String) rowData.getValues().get(0).get("formattedValue");
+          if (calculatedSiteName != null) {
+            siteName = calculatedSiteName;
+          }
+        } catch (Exception loggingException) {
+          log.error("Failed to print error log for exception: ", exception, loggingException);
+        }
+        log.warn("Failed to parse rowData while parsing Ankara spreadsheet: Site name: {} Exception: {} RowData: {}",
+            siteName, exception, rowData);
+      }
+    });
 
+    siteService.updateAllSites(ankaraSites);
   }
 
-  private Site convertRowDataToSite(RowData rowData, Collection<Site> ankaraSites) {
+  //İsim,aktiflik,malzeme,insan,gıda,koli,konum, not, 7
+  private void updateAnkaraSiteForTheRow(RowData rowData, Collection<Site> ankaraSites) {
 
     String siteName = (String) rowData.getValues().get(0).get("formattedValue");
+    if (siteName == null) {
+      return;
+    }
+
+    Color activeColor = rowData.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
+    boolean active = convertColorToActive(activeColor);
+    String activeNote = (String) rowData.getValues().get(1).get("formattedValue");
+
+    Color materialColor = rowData.getValues().get(2).getUserEnteredFormat().getBackgroundColor();
+    SiteStatus.SiteStatusLevel materialLevel = convertToSiteStatusLevel(materialColor);
+
+    Color humanNeed = rowData.getValues().get(3).getUserEnteredFormat().getBackgroundColor();
+    SiteStatus.SiteStatusLevel humanNeedLevel = convertToSiteStatusLevel(humanNeed);
+
+    Color foodColor = rowData.getValues().get(4).getUserEnteredFormat().getBackgroundColor();
+    SiteStatus.SiteStatusLevel foodLevel = convertToSiteStatusLevel(foodColor);
+
+    Color packageColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
+    SiteStatus.SiteStatusLevel packageLevel = convertToSiteStatusLevel(packageColor);
+
+    String location = (String) rowData.getValues().get(6).get("formattedValue");
+    String note = (String) rowData.getValues().get(7).get("formattedValue");
 
     Optional<Site> existingSite = ankaraSites.stream().filter(site -> site.getName().equals(siteName)).findAny();
 
     if (existingSite.isPresent()) {
       Site site = existingSite.get();
-      site.setLastSiteStatuses(null);
-    }
-    Site site = new Site();
+      List<SiteStatus> newSiteStatuses = generateSiteStatus(materialLevel, humanNeedLevel, foodLevel, packageLevel);
+      site.setLastSiteStatuses(newSiteStatuses);
 
-    return site;
+      Optional<SiteUpdate> newSiteUpdate = generateNewSiteUpdate(site, newSiteStatuses, activeNote, note);
+      if (newSiteUpdate.isPresent()) {
+        site.getUpdates().add(newSiteUpdate.get());
+      }
+    } else {
+      log.info("Site not present: {}", siteName);
+    }
+
+    //TODO Create new site for row that does not match any existing site
+//    Site site = new Site();
+  }
+
+  private Optional<SiteUpdate> generateNewSiteUpdate(Site site,
+                                                     List<SiteStatus> siteStatuses,
+                                                     String activeNote,
+                                                     String note) {
+
+    String concatenatedNote = activeNote + " - " + note;
+
+    if (site.getUpdates().size() != 0 &&
+        site.getUpdates().get(site.getUpdates().size() - 1).getUpdate().equals(concatenatedNote)) {
+      return Optional.empty();
+    }
+
+    SiteUpdate newSiteUpdate = new SiteUpdate();
+    newSiteUpdate.setUpdate(concatenatedNote);
+    newSiteUpdate.setSiteStatuses(siteStatuses);
+    return Optional.of(newSiteUpdate);
+  }
+
+  private List<SiteStatus> generateSiteStatus(SiteStatus.SiteStatusLevel materialLevel,
+                                              SiteStatus.SiteStatusLevel humanNeedLevel,
+                                              SiteStatus.SiteStatusLevel foodLevel,
+                                              SiteStatus.SiteStatusLevel packageLevel) {
+
+    return List.of(new SiteStatus(SiteStatusType.MATERIAL, materialLevel),
+        new SiteStatus(SiteStatusType.HUMAN_HELP, humanNeedLevel),
+        new SiteStatus(SiteStatusType.FOOD, foodLevel),
+        new SiteStatus(SiteStatusType.PACKAGE, packageLevel));
+  }
+
+  private boolean convertColorToActive(Color color) {
+
+    if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(1.0f))) {
+      return true;
+    }
+    return false;
+  }
+
+  private SiteStatus.SiteStatusLevel convertToSiteStatusLevel(Color color) {
+
+    if (color == null) {
+      return SiteStatus.SiteStatusLevel.UNKNOWN;
+    }
+
+
+    // Orange, level 3 , medium need
+    if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(0.6f))) {
+      if (color.getRed() != null && compareFloats(color.getRed(), Float.valueOf(1.0f))) {
+        return SiteStatus.SiteStatusLevel.NEED_REQUIRED;
+      }
+    }
+
+    // Yellow, level 2
+    if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(1.0f))) {
+      if (color.getRed() != null && compareFloats(color.getRed(), Float.valueOf(1.0f))) {
+        return SiteStatus.SiteStatusLevel.NEED_REQUIRED;
+      }
+    }
+
+    //Red , level 4, urgent need
+    if (color.getRed() != null && compareFloats(color.getRed(), Float.valueOf(1.0f))) {
+      return SiteStatus.SiteStatusLevel.URGENT_NEED_REQUIRED;
+    }
+
+    // Green, level 1
+    if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(1.0f))) {
+      return SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED;
+    }
+
+    // Blue, no info
+    if (color.getBlue() != null && compareFloats(color.getBlue(), Float.valueOf(1.0f))) {
+      return SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED;
+    }
+    return SiteStatus.SiteStatusLevel.UNKNOWN;
   }
 
   public Spreadsheet getSpreadSheet(String spreadsheetId, String range) throws IOException {
@@ -70,8 +200,8 @@ public class GoogleSheetsService {
     Sheets.Spreadsheets.Get request = sheetsService.spreadsheets().get(spreadsheetId);
     request.setRanges(ranges);
     request.setIncludeGridData(includeGridData);
-
     return request.execute();
+
   }
 
   private Sheets getSheets() {
@@ -84,5 +214,12 @@ public class GoogleSheetsService {
     return new Sheets.Builder(transport, jsonFactory, httpRequestInitializer)
         .setApplicationName("s")
         .build();
+  }
+
+  private boolean compareFloats(Float float1, Float fLoat2) {
+
+    double threshold = 0.00001;
+    return (Math.abs(float1 - fLoat2) < threshold);
+
   }
 }
