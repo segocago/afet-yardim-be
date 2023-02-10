@@ -75,10 +75,10 @@ public class Site {
   public List<SiteStatus> getLastSiteStatuses() {
     if (lastSiteStatuses == null || lastSiteStatuses.isEmpty()) {
       lastSiteStatuses = List.of(
-              new SiteStatus(SiteStatusType.HUMAN_HELP, SiteStatus.SiteStatusLevel.UNKNOWN),
-              new SiteStatus(SiteStatusType.FOOD, SiteStatus.SiteStatusLevel.UNKNOWN),
-              new SiteStatus(SiteStatusType.MATERIAL, SiteStatus.SiteStatusLevel.UNKNOWN),
-              new SiteStatus(SiteStatusType.PACKAGE, SiteStatus.SiteStatusLevel.UNKNOWN)
+              new SiteStatus(SiteStatusType.HUMAN_HELP, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.FOOD, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.MATERIAL, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.PACKAGE, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED)
       );
     }
     return lastSiteStatuses;
