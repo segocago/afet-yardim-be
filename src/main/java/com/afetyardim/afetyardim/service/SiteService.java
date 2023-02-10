@@ -38,6 +38,7 @@ public class SiteService {
   public Site addSiteUpdate(long siteId, SiteUpdate newSiteUpdate) {
     Site site = getSite(siteId);
     site.addSiteUpdate(newSiteUpdate);
+    site.setLastSiteStatuses(newSiteUpdate.getSiteStatuses());
     return siteRepository.save(site);
   }
 

@@ -46,6 +46,7 @@ public class Site {
 
   private String organizer;
 
+  @Column(length = 1024)
   private String description;
 
   private String contactInformation;
@@ -56,8 +57,7 @@ public class Site {
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb")
-  private List<SiteStatus> statuses = new ArrayList<>();
-
+  List<SiteStatus> lastSiteStatuses = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   private SiteType type = SiteType.SUPPLY;
@@ -68,9 +68,8 @@ public class Site {
     if (getUpdates() == null) {
       updates = new ArrayList<>();
     }
-
     updates.add(siteUpdate);
-    statuses = siteUpdate.getSiteStatus();
+
   }
 
 
