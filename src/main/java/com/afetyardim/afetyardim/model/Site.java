@@ -55,8 +55,9 @@ public class Site {
   @Column(columnDefinition = "jsonb")
   private List<SiteUpdate> updates = new ArrayList<>();
 
-  @Enumerated(EnumType.STRING)
-  private SiteStatus lastSiteStatus = SiteStatus.DEFAULT;
+  @Type(type = "json")
+  @Column(columnDefinition = "jsonb")
+  List<SiteStatus> lastSiteStatuses = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   private SiteType type = SiteType.SUPPLY;

@@ -1,6 +1,23 @@
 package com.afetyardim.afetyardim.model;
 
-public enum SiteStatus {
+import javax.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
 
-  DEFAULT, HUMAN_HELP_NEEDED, VEHICLE_NEEDED, MATERIAL_NEEDED, HELP_NOT_NEEDED, SITE_NOT_ACTIVE;
+@Embeddable
+@Getter
+@Setter
+public class SiteStatus {
+
+  private SiteStatusType siteStatusType;
+
+  private SiteStatusLevel siteStatusLevel;
+
+  public enum SiteStatusLevel {
+
+    NO_NEED_REQUIRED, NEED_REQUIRED, URGENT_NEED_REQUIRED;
+  }
 }
+
+
+
