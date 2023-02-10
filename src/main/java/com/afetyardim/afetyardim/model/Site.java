@@ -57,7 +57,7 @@ public class Site {
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb")
-  List<SiteStatus> lastSiteStatuses = new ArrayList<>();
+  private List<SiteStatus> lastSiteStatuses = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   private SiteType type = SiteType.SUPPLY;
@@ -70,6 +70,18 @@ public class Site {
     }
     updates.add(siteUpdate);
 
+  }
+
+  public List<SiteStatus> getLastSiteStatuses() {
+    if (lastSiteStatuses == null || lastSiteStatuses.isEmpty()) {
+      lastSiteStatuses = List.of(
+              new SiteStatus(SiteStatusType.HUMAN_HELP, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.FOOD, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.MATERIAL, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED),
+              new SiteStatus(SiteStatusType.PACKAGE, SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED)
+      );
+    }
+    return lastSiteStatuses;
   }
 
 

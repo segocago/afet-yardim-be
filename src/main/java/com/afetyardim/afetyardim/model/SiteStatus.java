@@ -11,13 +11,21 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SiteStatus {
 
+  public SiteStatus() {
+  }
+
+  public SiteStatus(SiteStatusType type, SiteStatusLevel level) {
+    this.siteStatusType = type;
+    this.siteStatusLevel = level;
+  }
+
   private SiteStatusType siteStatusType;
 
   private SiteStatusLevel siteStatusLevel;
 
   public enum SiteStatusLevel {
 
-    NO_NEED_REQUIRED, NEED_REQUIRED, URGENT_NEED_REQUIRED;
+    NO_NEED_REQUIRED, NEED_REQUIRED, URGENT_NEED_REQUIRED
   }
 }
 
