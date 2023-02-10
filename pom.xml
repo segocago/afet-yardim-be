@@ -63,18 +63,24 @@
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
-            <version>1.32.1</version>
+            <version>1.18.0-rc</version>
         </dependency>
         <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client-jetty</artifactId>
-            <version>1.32.1</version>
+            <version>1.34.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-sheets -->
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-sheets</artifactId>
             <version>v4-rev614-1.18.0-rc</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client-jackson2</artifactId>
+            <version>1.18.0-rc</version>
         </dependency>
     </dependencies>
 
