@@ -25,7 +25,7 @@ public class SiteStatus {
 
   public enum SiteStatusLevel {
 
-    NO_NEED_REQUIRED, NEED_REQUIRED, URGENT_NEED_REQUIRED, UNKNOWN
+    NO_NEED_REQUIRED, NEED_REQUIRED, URGENT_NEED_REQUIRED
   }
 }
 
