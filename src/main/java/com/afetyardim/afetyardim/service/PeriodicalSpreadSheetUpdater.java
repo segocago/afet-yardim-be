@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class PeriodicalSpreadSheetUpdater {
 
   private final long ANKARA_UPDATE_PERIOD_IN_MILLIS = 10 * 60 * 1000;
-  private final long INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS = 1 * 1000;
+  private final long INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS = 30 * 1000;
 
   private final GoogleSheetsService googleSheetsService;
 
