@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -77,13 +79,32 @@ public class SpreadSheetUtils {
         }
     }
 
-    public List<Double> getCoordinatesByUrl(String mapUrl) throws IOException {
-        String url = expandMapUrl(mapUrl);
-        String[] firstArr = url.split("@");
-        if (firstArr.length < 2) {
-            return List.of();
+    private String expandMapUrlRecursive(String url) throws IOException {
+        String originalUrl = url;
+        String newUrl = expandMapUrl(originalUrl);
+        while (!originalUrl.equals(newUrl)) {
+            originalUrl = newUrl;
+            newUrl = expandMapUrl(originalUrl);
         }
-        String[] urlArr = firstArr[1].split(",");
-        return List.of(Double.valueOf(urlArr[0]), Double.valueOf(urlArr[1]));
+        return newUrl;
+    }
+
+    public List<Double> getCoordinatesByUrl(String mapUrl) throws Exception {
+        String url = expandMapUrlRecursive(mapUrl);
+        Double latitude = getCoordinate(url, "!3d");
+        Double longitude = getCoordinate(url, "!4d");
+        return List.of(latitude, longitude);
+    }
+
+    private Double getCoordinate(String url, String identifier) throws Exception {
+
+        Pattern pattern = Pattern.compile(identifier + "[0-9\\.-]*", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(url);
+        boolean matchFound = matcher.find();
+        if (matchFound) {
+            String foundedCoordinate = matcher.group(0);
+            return Double.valueOf(foundedCoordinate.substring(3));
+        }
+        throw new Exception("Invalid map url");
     }
 }
