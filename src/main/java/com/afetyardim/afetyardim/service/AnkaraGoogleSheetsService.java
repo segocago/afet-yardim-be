@@ -1,9 +1,11 @@
 package com.afetyardim.afetyardim.service;
 
+import com.afetyardim.afetyardim.model.Location;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteStatus;
 import com.afetyardim.afetyardim.model.SiteStatusType;
 import com.afetyardim.afetyardim.model.SiteUpdate;
+import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -13,8 +15,10 @@ import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +34,14 @@ public class AnkaraGoogleSheetsService {
   private String API_KEY;
 
   private final SiteService siteService;
+  private final SpreadSheetUtils spreadSheetUtils;
 
   private final static String ANKARA_SPREAD_SHEET_ID = "1TT7DbGj6F6BN10PS0PkSLAXXLyX9i-ILlBEs70X-Lac";
 
   //TODO: Increase spread sheet range
   private final static String ANKARA_SPREAD_SHEET_RANGE = "A1:H150";
+
+  private final static String CITY_NAME = "Ankara";
 
 
   public void updateSitesForAnkaraSpreadSheet() throws IOException {
@@ -49,13 +56,18 @@ public class AnkaraGoogleSheetsService {
     rows.remove(0);
     rows.remove(0);
 
+    List<Site> newSites = new ArrayList<>();
+
     for (int i = 0; i < rows.size() - 2; ) {
 
       RowData nameRow = rows.get(i);
       RowData activeRow = rows.get(i + 1);
       RowData noteRow = rows.get(i + 2);
       try {
-        updateAnkaraSiteForTheRow(nameRow, activeRow, noteRow, ankaraSites);
+        Optional<Site> newSite = updateOrCreateNewSite(nameRow, activeRow, noteRow, ankaraSites);
+        if(newSite.isPresent()){
+          newSites.add(newSite.get());
+        }
       } catch (Exception exception) {
 
         String siteName = "COULD_NOT_COMPUTE_SITE_NAME";
@@ -75,17 +87,18 @@ public class AnkaraGoogleSheetsService {
 
     }
 
-
+    log.info("Ankara - Rows {}, New sites {}, Previous site count {}",rows.size(),newSites.size(),ankaraSites.size());
+    ankaraSites.addAll(newSites);
     siteService.saveAllSites(ankaraSites);
   }
 
   //İsim,aktiflik,malzeme,insan,gıda,koli,konum, not, 7
-  private void updateAnkaraSiteForTheRow(RowData nameRow, RowData activeRow, RowData noteRow,
-                                         Collection<Site> ankaraSites) {
+  private Optional<Site> updateOrCreateNewSite(RowData nameRow, RowData activeRow, RowData noteRow,
+                                               Collection<Site> ankaraSites) {
 
     String siteName = (String) nameRow.getValues().get(0).get("formattedValue");
     if (siteName == null) {
-      return;
+      return Optional.empty();
     }
 
     Color activeColor = activeRow.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
@@ -125,11 +138,44 @@ public class AnkaraGoogleSheetsService {
         site.getUpdates().add(newSiteUpdate.get());
       }
     } else {
-      log.info("Site not present: {}", siteName);
-    }
 
-    //TODO Create new site for row that does not match any existing site
-//    Site site = new Site();
+      String siteMapsUrl = nameRow.getValues().get(0).getHyperlink();
+      //Cant create new site if we don't have the googlemaps url
+      if(siteMapsUrl == null){
+        return Optional.empty();
+      }
+      Optional<Location> location = buildSiteLocation(siteMapsUrl);
+      if(location.isPresent()){
+        Site site = new Site();
+        site.setName(siteName);
+        site.setActive(active);
+        site.setDescription(siteName);
+        site.setLocation(location.get());
+        return Optional.of(site);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private Optional<Location> buildSiteLocation(String mapUrl) {
+
+    if (Objects.isNull(mapUrl)) {
+      return Optional.empty();
+    }
+    String district = "Bilinmiyor";
+    Location location = new Location();
+    location.setDistrict(district);
+    location.setCity(CITY_NAME);
+    location.setAdditionalAddress("Bu alana adres tarifi al butonunu kullanınız.");
+    try {
+      List<Double> coordinates = spreadSheetUtils.getCoordinatesByUrl(mapUrl);
+      location.setLatitude(coordinates.get(0));
+      location.setLongitude(coordinates.get(1));
+    } catch (Exception exception) {
+      log.error("Could not get coordinates by map url {}", mapUrl, exception);
+      return Optional.empty();
+    }
+    return Optional.of(location);
   }
 
   private Optional<SiteUpdate> generateNewSiteUpdate(Site site,
