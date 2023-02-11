@@ -3,7 +3,7 @@ package com.afetyardim.afetyardim.service.izmir;
 import com.afetyardim.afetyardim.model.*;
 import com.afetyardim.afetyardim.service.SiteService;
 import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
-import com.afetyardim.afetyardim.util.SiteUtils;
+import com.afetyardim.afetyardim.service.common.SiteUtils;
 import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
@@ -13,17 +13,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.afetyardim.afetyardim.util.SiteUtils.compareFloats;
+import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class IzmirSitesParser {
-    @Value("${google.api.key}")
-    private String API_KEY;
 
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
@@ -50,11 +47,12 @@ public class IzmirSitesParser {
             RowData rowData = rows.get(i);
             try {
 
+                String district = (String) rowData.getValues().get(0).get("formattedValue");
                 String siteName = (String) rowData.getValues().get(1).get("formattedValue");
-                if (siteName == null) {
+                if (siteName == null || district == null) {
                     continue;
                 }
-                Optional<Site> existingSite = SiteUtils.findSiteByName(siteName, izmirSites);
+                Optional<Site> existingSite = SiteUtils.findSiteByNameAndDistrict(siteName,district, izmirSites);
 
                 if (existingSite.isEmpty()) {
                     Optional<Site> newSite = createIzmirSite(rowData);
