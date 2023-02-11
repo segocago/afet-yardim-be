@@ -3,24 +3,16 @@ package com.afetyardim.afetyardim.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.vladmihalcea.hibernate.type.json.JsonType;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -29,6 +21,10 @@ import org.hibernate.annotations.TypeDef;
 @TypeDef(name = "json", typeClass = JsonType.class)
 @Table(indexes = @Index(name = "city_index", columnList = "city"))
 public class Site {
+
+    public Site() {
+        this.createDateTime = LocalDateTime.now();
+    }
 
   @Id
   @Column(name = "ID", nullable = false, unique = true)
