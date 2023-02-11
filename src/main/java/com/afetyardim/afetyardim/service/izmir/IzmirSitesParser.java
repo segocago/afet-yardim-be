@@ -33,6 +33,7 @@ public class IzmirSitesParser {
 
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
+    private final IzmirSitesInitializer izmirSitesInitializer;
 
     private final static String IZMIR_SPREAD_SHEET_ID = "1pAUwGOfuu6mRUnsHs7uQrggAu8GQm6Z-r6M25lgBCNY";
 
@@ -49,7 +50,6 @@ public class IzmirSitesParser {
         Collection<Site> izmirSites = siteService.getSites(Optional.of("İzmir"), Optional.empty());
         List<Site> newSites = new ArrayList<>();
         int updatedSiteCount = 0;
-        int createdSiteCount = 0;
 
         for (int i = 0; i < rows.size(); i++) {
             RowData rowData = rows.get(i);
@@ -62,9 +62,11 @@ public class IzmirSitesParser {
                 Optional<Site> existingSite = SiteUtils.findSiteByName(siteName, izmirSites);
 
                 if (existingSite.isEmpty()) {
-                    Site newSite = createIzmirSite(rowData);
-                    newSites.add(newSite);
-                    createdSiteCount++;
+                    Optional<Site> newSite = izmirSitesInitializer.createIzmirSite(rowData);
+                    if(newSite.isPresent()){
+                        newSites.add(newSite.get());
+                    }
+
                 } else {
                     updateSite(rowData, existingSite.get());
                     updatedSiteCount++;
@@ -75,7 +77,8 @@ public class IzmirSitesParser {
         }
 
         log.info("Total rows in excel: {}, Total sites in db before: {}, Created site count: {}, Updated site count: {}"
-            ,rows.size(),izmirSites.size(),createdSiteCount,updatedSiteCount);
+            ,rows.size(),izmirSites.size(),newSites.size(),updatedSiteCount);
+        izmirSites.addAll(newSites);
         siteService.saveAllSites(izmirSites);
 
     }
@@ -176,57 +179,4 @@ public class IzmirSitesParser {
         }
         return SiteStatus.SiteStatusLevel.UNKNOWN;
     }
-
-    private static Color getNotNeededColor(){
-        Color notNeededColor = new Color();
-        notNeededColor.setRed(1.0F);
-        return notNeededColor;
-    }
-
-    private static Color getNeededColor(){
-        Color neededColor = new Color();
-        neededColor.setGreen(1.0F);
-        return neededColor;
-    }
-
-    private static Color getUnknownColor(){
-        Color notNeededColor = new Color();
-        notNeededColor.setRed(1.0F);
-        return notNeededColor;
-    }
-
-    //Create site /////////////////////
-    public Site createIzmirSite(RowData rowData) {
-        String siteName = (String) rowData.getValues().get(1).get("formattedValue");
-        if (siteName == null) {
-            return null;
-        }
-        String phone = (String) rowData.getValues().get(3).get("formattedValue");
-        String description = (String) rowData.getValues().get(5).get("formattedValue");
-
-        Site site = new Site();
-        site.setName(siteName);
-        site.setActive(false);
-        site.setContactInformation(phone);
-        site.setVerified(true);
-        site.setType(SiteType.SUPPLY);
-        site.setDescription(description);
-
-        site.setLocation(buildSiteLocation(rowData));
-        return site;
-    }
-
-    private Location buildSiteLocation(RowData rowData) {
-        String siteName = (String) rowData.getValues().get(1).get("formattedValue");
-        String district = (String) rowData.getValues().get(0).get("formattedValue");
-        String mapUrl = (String) rowData.getValues().get(2).get("formattedValue");
-        Location location = new Location();
-        location.setDistrict(district);
-        location.setCity("İzmir");
-        location.setAdditionalAddress(siteName);
-        location.setLongitude(null);
-        location.setLatitude(null);
-        return location;
-    }
-
 }
