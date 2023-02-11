@@ -14,6 +14,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SiteUpdate {
 
+  public SiteUpdate() {
+    createDateTime = LocalDateTime.now();
+  }
+
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private LocalDateTime createDateTime;
 

@@ -64,6 +64,10 @@ public class Site {
 
   private boolean verified = false;
 
+  @Column(columnDefinition = "boolean default false")
+  private Boolean active = false;
+
+
   public void addSiteUpdate(SiteUpdate siteUpdate) {
     if (getUpdates() == null) {
       updates = new ArrayList<>();
