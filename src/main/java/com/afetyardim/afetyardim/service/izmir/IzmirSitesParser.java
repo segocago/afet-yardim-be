@@ -1,28 +1,22 @@
 package com.afetyardim.afetyardim.service.izmir;
 
-import static com.afetyardim.afetyardim.util.SiteUtils.compareFloats;
-import com.afetyardim.afetyardim.model.Location;
-import com.afetyardim.afetyardim.model.Site;
-import com.afetyardim.afetyardim.model.SiteStatus;
-import com.afetyardim.afetyardim.model.SiteStatusType;
-import com.afetyardim.afetyardim.model.SiteType;
-import com.afetyardim.afetyardim.model.SiteUpdate;
+import com.afetyardim.afetyardim.model.*;
 import com.afetyardim.afetyardim.service.SiteService;
 import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
 import com.afetyardim.afetyardim.util.SiteUtils;
 import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static com.afetyardim.afetyardim.util.SiteUtils.compareFloats;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +27,12 @@ public class IzmirSitesParser {
 
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
-    private final IzmirSitesInitializer izmirSitesInitializer;
 
     private final static String IZMIR_SPREAD_SHEET_ID = "1pAUwGOfuu6mRUnsHs7uQrggAu8GQm6Z-r6M25lgBCNY";
 
     private final static String IZMIR_SPREAD_SHEET_RANGE = "A1:G100";
+
+    private final static String CITY_NAME = "İzmir";
 
     public void parseIzmirSpreadsheet() throws IOException {
 
@@ -47,7 +42,7 @@ public class IzmirSitesParser {
         List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
         //Remove header row
         rows.remove(0);
-        Collection<Site> izmirSites = siteService.getSites(Optional.of("İzmir"), Optional.empty());
+        Collection<Site> izmirSites = siteService.getSites(Optional.of(CITY_NAME), Optional.empty());
         List<Site> newSites = new ArrayList<>();
         int updatedSiteCount = 0;
 
@@ -62,7 +57,7 @@ public class IzmirSitesParser {
                 Optional<Site> existingSite = SiteUtils.findSiteByName(siteName, izmirSites);
 
                 if (existingSite.isEmpty()) {
-                    Optional<Site> newSite = izmirSitesInitializer.createIzmirSite(rowData);
+                    Optional<Site> newSite = createIzmirSite(rowData);
                     if(newSite.isPresent()){
                         newSites.add(newSite.get());
                     }
@@ -175,5 +170,50 @@ public class IzmirSitesParser {
             return SiteStatus.SiteStatusLevel.NEED_REQUIRED;
         }
         return SiteStatus.SiteStatusLevel.UNKNOWN;
+    }
+
+    public Optional<Site> createIzmirSite(RowData rowData) {
+        String siteName = (String) rowData.getValues().get(1).get("formattedValue");
+        Optional<Location> location = buildSiteLocation(rowData);
+        if (Objects.isNull(siteName)) {
+            return Optional.empty();
+        }
+
+        if (location.isEmpty()) {
+            log.warn("Location is null for {}", siteName);
+            return Optional.empty();
+        }
+
+        String phone = (String) rowData.getValues().get(3).get("formattedValue");
+        Site site = new Site();
+        site.setName(siteName);
+        site.setActive(false);
+        site.setContactInformation(phone);
+        site.setVerified(true);
+        site.setType(SiteType.SUPPLY);
+        site.setLocation(location.get());
+        return Optional.of(site);
+    }
+
+    private Optional<Location> buildSiteLocation(RowData rowData) {
+        String mapUrl = (String) rowData.getValues().get(2).get("formattedValue");
+
+        if (Objects.isNull(mapUrl)) {
+            return Optional.empty();
+        }
+        String district = (String) rowData.getValues().get(0).get("formattedValue");
+        Location location = new Location();
+        location.setDistrict(district);
+        location.setCity(CITY_NAME);
+        location.setAdditionalAddress("Bu alana adres tarifi al butonunu kullanınız.");
+        try {
+            List<Double> coordinates = spreadSheetUtils.getCoordinatesByUrl(mapUrl);
+            location.setLatitude(coordinates.get(0));
+            location.setLongitude(coordinates.get(1));
+        } catch (Exception exception) {
+            log.error("Could not get coordinates by map url {}", mapUrl, exception);
+            return Optional.empty();
+        }
+        return Optional.of(location);
     }
 }
