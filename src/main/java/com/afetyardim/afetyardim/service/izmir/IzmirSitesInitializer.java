@@ -80,6 +80,7 @@ public class IzmirSitesInitializer {
         Location location = new Location();
         location.setDistrict(district);
         location.setCity("İzmir");
+        location.setAdditionalAddress("Bu alana adres tarifi al butonunu kullanınız.");
         List<Double> coordinates = spreadSheetUtils.getCoordinatesByUrl(mapUrl);
         if (coordinates.size() < 2) {
             return null;
