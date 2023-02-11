@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GoogleSheetsService {
+public class AnkaraGoogleSheetsService {
 
   @Value("${google.api.key}")
   private String API_KEY;
@@ -76,7 +76,7 @@ public class GoogleSheetsService {
     }
 
 
-    siteService.updateAllSites(ankaraSites);
+    siteService.saveAllSites(ankaraSites);
   }
 
   //İsim,aktiflik,malzeme,insan,gıda,koli,konum, not, 7
