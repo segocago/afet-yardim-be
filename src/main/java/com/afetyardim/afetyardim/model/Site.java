@@ -23,7 +23,13 @@ import java.util.List;
 public class Site {
 
     public Site() {
-        this.createDateTime = LocalDateTime.now();
+
+      this.createDateTime = LocalDateTime.now();
+      this.description = "Bilinmiyor";
+      this.contactInformation="Bilinmiyor";
+      this.organizer = "Bilinmiyor";
+      this.verified = true;
+      this.type = SiteType.SUPPLY;
     }
 
   @Id
