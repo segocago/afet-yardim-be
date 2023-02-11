@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PeriodicalSpreadSheetUpdater {
 
-  private final long ANKARA_UPDATE_PERIOD_IN_MILLIS = 10 * 60 * 1000;
-  private final long INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS = 2 * 1000;
+  private final long ANKARA_UPDATE_PERIOD_IN_MILLIS = 5 * 60 * 1000;
+  private final long INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS = 30 * 1000;
 
   private final AnkaraGoogleSheetsService ankaraGoogleSheetsService;
 
@@ -22,8 +22,7 @@ public class PeriodicalSpreadSheetUpdater {
   @Scheduled(initialDelay = INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS, fixedRate = ANKARA_UPDATE_PERIOD_IN_MILLIS)
   public void scheduleFixedRateTask() throws IOException {
 
-//    parseAnkaraSpreadsheet();
-
+    parseAnkaraSpreadsheet();
     parseIzmirSpreadsheet();
   }
 
