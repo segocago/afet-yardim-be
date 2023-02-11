@@ -48,7 +48,8 @@ public class IzmirSitesParser {
         rows.remove(0);
         Collection<Site> izmirSites = siteService.getSites(Optional.of("İzmir"), Optional.empty());
         List<Site> newSites = new ArrayList<>();
-
+        int updatedSiteCount = 0;
+        int createdSiteCount = 0;
 
         for (int i = 0; i < rows.size(); i++) {
             RowData rowData = rows.get(i);
@@ -63,14 +64,18 @@ public class IzmirSitesParser {
                 if (existingSite.isEmpty()) {
                     Site newSite = createIzmirSite(rowData);
                     newSites.add(newSite);
+                    createdSiteCount++;
                 } else {
                     updateSite(rowData, existingSite.get());
+                    updatedSiteCount++;
                 }
             }catch (Exception exception){
                 log.warn("Error while parsing row, {}",rowData,exception);
             }
         }
-//        izmirSites.addAll(newSites);
+
+        log.info("Total rows in excel: {}, Total sites in db before: {}, Created site count: {}, Updated site count: {}"
+            ,rows.size(),izmirSites.size(),createdSiteCount,updatedSiteCount);
         siteService.saveAllSites(izmirSites);
 
     }
@@ -84,14 +89,20 @@ public class IzmirSitesParser {
         String lastUpdateTime = (String) rowData.getValues().get(4).get("formattedValue");
 
         String needStatusText = (String) rowData.getValues().get(5).get("formattedValue");
-        Color needStatusColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
+        Color needStatusColor = null;
+        try {
+             needStatusColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
+        }catch (Exception exception){
+            log.warn("Error while parsing need status column color for izmir site: {}",site.getName());
+        }
         SiteStatus.SiteStatusLevel needLevel = convertToSiteStatusLevelForIzmir(needStatusColor);
+
 
         String note ="";
         try {
             note = (String) rowData.getValues().get(6).get("formattedValue");
         }catch(Exception exception){
-            log.warn("Error while parsing note column for izmir site: {}",site.getName(),exception);
+            log.warn("Error while parsing note column for izmir site: {}",site.getName());
         }
 
 
