@@ -34,7 +34,7 @@ public class GoogleSheetsService {
   private final static String ANKARA_SPREAD_SHEET_ID = "1TT7DbGj6F6BN10PS0PkSLAXXLyX9i-ILlBEs70X-Lac";
 
   //TODO: Increase spread sheet range
-  private final static String ANKARA_SPREAD_SHEET_RANGE = "A1:H100";
+  private final static String ANKARA_SPREAD_SHEET_RANGE = "A1:H150";
 
 
   public void updateSitesForAnkaraSpreadSheet() throws IOException {
@@ -45,16 +45,22 @@ public class GoogleSheetsService {
     Spreadsheet spreadsheet = getSpreadSheet(ANKARA_SPREAD_SHEET_ID, ANKARA_SPREAD_SHEET_RANGE);
 
     List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
+    //Remove first 2 rows of header rows
+    rows.remove(0);
     rows.remove(0);
 
-    rows.stream().forEach(rowData -> {
+    for (int i = 0; i < rows.size() - 2; ) {
+
+      RowData nameRow = rows.get(i);
+      RowData activeRow = rows.get(i + 1);
+      RowData noteRow = rows.get(i + 2);
       try {
-        updateAnkaraSiteForTheRow(rowData, ankaraSites);
+        updateAnkaraSiteForTheRow(nameRow, activeRow, noteRow, ankaraSites);
       } catch (Exception exception) {
 
         String siteName = "COULD_NOT_COMPUTE_SITE_NAME";
         try {
-          String calculatedSiteName = (String) rowData.getValues().get(0).get("formattedValue");
+          String calculatedSiteName = (String) nameRow.getValues().get(0).get("formattedValue");
           if (calculatedSiteName != null) {
             siteName = calculatedSiteName;
           }
@@ -62,46 +68,57 @@ public class GoogleSheetsService {
           log.error("Failed to print error log for exception: ", exception, loggingException);
         }
         log.warn("Failed to parse rowData while parsing Ankara spreadsheet: Site name: {} Exception: {} RowData: {}",
-            siteName, exception, rowData);
+            siteName, exception, nameRow);
       }
-    });
+
+      i = Math.min(i + 3, rows.size());
+
+    }
+
 
     siteService.updateAllSites(ankaraSites);
   }
 
   //İsim,aktiflik,malzeme,insan,gıda,koli,konum, not, 7
-  private void updateAnkaraSiteForTheRow(RowData rowData, Collection<Site> ankaraSites) {
+  private void updateAnkaraSiteForTheRow(RowData nameRow, RowData activeRow, RowData noteRow,
+                                         Collection<Site> ankaraSites) {
 
-    String siteName = (String) rowData.getValues().get(0).get("formattedValue");
+    String siteName = (String) nameRow.getValues().get(0).get("formattedValue");
     if (siteName == null) {
       return;
     }
 
-    Color activeColor = rowData.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
+    Color activeColor = activeRow.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
     boolean active = convertColorToActive(activeColor);
-    String activeNote = (String) rowData.getValues().get(1).get("formattedValue");
+    String activeNote = (String) activeRow.getValues().get(1).get("formattedValue");
 
-    Color materialColor = rowData.getValues().get(2).getUserEnteredFormat().getBackgroundColor();
+    Color materialColor = nameRow.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
     SiteStatus.SiteStatusLevel materialLevel = convertToSiteStatusLevel(materialColor);
 
-    Color humanNeed = rowData.getValues().get(3).getUserEnteredFormat().getBackgroundColor();
+    Color humanNeed = nameRow.getValues().get(2).getUserEnteredFormat().getBackgroundColor();
     SiteStatus.SiteStatusLevel humanNeedLevel = convertToSiteStatusLevel(humanNeed);
 
-    Color foodColor = rowData.getValues().get(4).getUserEnteredFormat().getBackgroundColor();
+    Color foodColor = nameRow.getValues().get(3).getUserEnteredFormat().getBackgroundColor();
     SiteStatus.SiteStatusLevel foodLevel = convertToSiteStatusLevel(foodColor);
 
-    Color packageColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
+    Color packageColor = nameRow.getValues().get(4).getUserEnteredFormat().getBackgroundColor();
     SiteStatus.SiteStatusLevel packageLevel = convertToSiteStatusLevel(packageColor);
 
-    String location = (String) rowData.getValues().get(6).get("formattedValue");
-    String note = (String) rowData.getValues().get(7).get("formattedValue");
+//    String location = (String) noteRow.getValues().get(6).get("formattedValue");
+    String note = (String) noteRow.getValues().get(0).get("formattedValue");
 
-    Optional<Site> existingSite = ankaraSites.stream().filter(site -> site.getName().equals(siteName)).findAny();
+    //People are adding extra characters to sitename
+    Optional<Site> existingSite =
+        ankaraSites.stream().filter(
+            site -> siteName.toLowerCase().contains(site.getName().toLowerCase()) ||
+                site.getName().toLowerCase().contains(siteName.toLowerCase())
+        ).findAny();
 
     if (existingSite.isPresent()) {
       Site site = existingSite.get();
       List<SiteStatus> newSiteStatuses = generateSiteStatus(materialLevel, humanNeedLevel, foodLevel, packageLevel);
       site.setLastSiteStatuses(newSiteStatuses);
+      site.setActive(active);
 
       Optional<SiteUpdate> newSiteUpdate = generateNewSiteUpdate(site, newSiteStatuses, activeNote, note);
       if (newSiteUpdate.isPresent()) {
