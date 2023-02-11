@@ -147,9 +147,6 @@ public class IzmirSitesParser {
         newSiteUpdate.setUpdate(concatenatedNote);
         newSiteUpdate.setSiteStatuses(siteStatuses);
 
-        //TODO : Remove minus 3 hours before merge
-        newSiteUpdate.setCreateDateTime(LocalDateTime.now().minusHours(3));
-
         return Optional.of(newSiteUpdate);
     }
 
