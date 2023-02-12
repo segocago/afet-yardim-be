@@ -1,5 +1,6 @@
 package com.afetyardim.afetyardim.service;
 
+import com.afetyardim.afetyardim.service.istanbul.IstanbulSitesParser;
 import com.afetyardim.afetyardim.service.izmir.IzmirSitesParser;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class PeriodicalSpreadSheetUpdater {
   private final AnkaraGoogleSheetsService ankaraGoogleSheetsService;
 
   private final IzmirSitesParser izmirSitesParser;
+  private final IstanbulSitesParser istanbulSitesParser;
 
   @Scheduled(initialDelay = INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS, fixedRate = ANKARA_UPDATE_PERIOD_IN_MILLIS)
   public void scheduleFixedRateTask() throws IOException {
@@ -50,7 +52,7 @@ public class PeriodicalSpreadSheetUpdater {
   private void parseIstanbulSpreadsheet() {
     log.info("Start Istanbul spreadsheet parsing");
     try {
-      izmirSitesParser.parseIzmirSpreadsheet();
+      istanbulSitesParser.parseSpreadsheet();
     } catch (IOException e) {
       throw new RuntimeException("Exception while parsing Istanbul spreadsheet", e);
     }
