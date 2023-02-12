@@ -9,6 +9,8 @@ Bu merkezlerde bazen malzeme, insan fazlası vb. olabilirken başka merkezlerde 
 bu merkezlerin şu anki durumlarını da insanlara sunmayı umuyoruz ki yardım etmek isteyen insanlar doğru merkezlere
 yönlenebilsin.
 
+https://www.afetyardimalanlari.org/
+
 # Uygulamayı çalıştırmak
 
 Uygulama java, maven ve spring boot stack'iyle yazılıyor. Veri tabanı şifresini repoya ekleyemediğim için geliştirme
