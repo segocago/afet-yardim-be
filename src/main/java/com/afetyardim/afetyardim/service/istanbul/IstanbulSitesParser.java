@@ -21,6 +21,7 @@ import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
 @RequiredArgsConstructor
 @Slf4j
 public class IstanbulSitesParser {
+g
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
 
@@ -121,7 +122,7 @@ public class IstanbulSitesParser {
 
         String phone;
         try{
-            phone = (String) row.getValues().get(3).get("formattedValue");
+            phone = (String) row.getValues().get(4).get("formattedValue");
         }catch(Exception ex){
             phone = null;
         }
