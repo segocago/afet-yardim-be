@@ -1,5 +1,6 @@
 package com.afetyardim.afetyardim.service;
 
+import com.afetyardim.afetyardim.model.ActiveStatus;
 import com.afetyardim.afetyardim.model.Location;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteStatus;
@@ -102,7 +103,7 @@ public class AnkaraGoogleSheetsService {
     }
 
     Color activeColor = activeRow.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
-    boolean active = convertColorToActive(activeColor);
+    ActiveStatus activeStatus = convertColorToActive(activeColor);
     String activeNote = (String) activeRow.getValues().get(1).get("formattedValue");
 
     Color materialColor = nameRow.getValues().get(1).getUserEnteredFormat().getBackgroundColor();
@@ -131,7 +132,8 @@ public class AnkaraGoogleSheetsService {
       Site site = existingSite.get();
       List<SiteStatus> newSiteStatuses = generateSiteStatus(materialLevel, humanNeedLevel, foodLevel, packageLevel);
       site.setLastSiteStatuses(newSiteStatuses);
-      site.setActive(active);
+      site.setActive(activeStatus == ActiveStatus.ACTIVE);
+      site.setActiveStatus(activeStatus);
 
       Optional<SiteUpdate> newSiteUpdate = generateNewSiteUpdate(site, newSiteStatuses, activeNote, note);
       if (newSiteUpdate.isPresent()) {
@@ -148,7 +150,8 @@ public class AnkaraGoogleSheetsService {
       if(location.isPresent()){
         Site site = new Site();
         site.setName(siteName);
-        site.setActive(active);
+        site.setActive(activeStatus == ActiveStatus.ACTIVE);
+        site.setActiveStatus(activeStatus);
         site.setDescription(siteName);
         site.setLocation(location.get());
         return Optional.of(site);
@@ -207,12 +210,29 @@ public class AnkaraGoogleSheetsService {
         new SiteStatus(SiteStatusType.PACKAGE, packageLevel));
   }
 
-  private boolean convertColorToActive(Color color) {
+  private ActiveStatus convertColorToActive(Color color) {
 
-    if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(1.0f))) {
-      return true;
+    Color activeColor1 = new Color();
+    activeColor1.setGreen(1.0f);
+
+
+    Color activeColor2 = new Color();
+    activeColor2.setBlue(0.49019608f);
+    activeColor2.setGreen(0.76862746f);
+    activeColor2.setRed(0.5764706f);
+
+    Color notActiveColor = new Color();
+    notActiveColor.setRed(0.6f);
+    notActiveColor.setGreen(0.6f);
+    notActiveColor.setBlue(0.6f);
+
+    if (color.equals(activeColor1) || color.equals(activeColor2)) {
+      return ActiveStatus.ACTIVE;
     }
-    return false;
+    if(color.equals(notActiveColor)){
+      return ActiveStatus.NOT_ACTIVE;
+    }
+    return ActiveStatus.UNKNOWN;
   }
 
   private SiteStatus.SiteStatusLevel convertToSiteStatusLevel(Color color) {

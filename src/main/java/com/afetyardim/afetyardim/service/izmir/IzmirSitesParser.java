@@ -9,7 +9,6 @@ import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,21 +24,27 @@ public class IzmirSitesParser {
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
 
-    private final static String IZMIR_SPREAD_SHEET_ID = "1pAUwGOfuu6mRUnsHs7uQrggAu8GQm6Z-r6M25lgBCNY";
+    public String getCityName(){
+        return "İzmir";
+    }
 
-    private final static String IZMIR_SPREAD_SHEET_RANGE = "A1:G100";
+    public String getIzmirSpreadSheetId(){
+        return "1pAUwGOfuu6mRUnsHs7uQrggAu8GQm6Z-r6M25lgBCNY";
+    }
 
-    private final static String CITY_NAME = "İzmir";
+    public String getSpreadSheetRange(){
+        return "A1:G100";
+    }
 
-    public void parseIzmirSpreadsheet() throws IOException {
+    public void parseSpreadsheet() throws IOException {
 
-        log.info("Start Izmir spread sheet parsing");
+        log.info("Start {} spread sheet parsing",getCityName());
 
-        Spreadsheet spreadsheet = spreadSheetUtils.getSpreadSheet(IZMIR_SPREAD_SHEET_ID, IZMIR_SPREAD_SHEET_RANGE);
+        Spreadsheet spreadsheet = spreadSheetUtils.getSpreadSheet(getIzmirSpreadSheetId(), getSpreadSheetRange());
         List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
         //Remove header row
         rows.remove(0);
-        Collection<Site> izmirSites = siteService.getSites(Optional.of(CITY_NAME), Optional.empty());
+        Collection<Site> izmirSites = siteService.getSites(Optional.of(getCityName()), Optional.empty());
         List<Site> newSites = new ArrayList<>();
         int updatedSiteCount = 0;
 
@@ -89,7 +94,7 @@ public class IzmirSitesParser {
         try {
              needStatusColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
         }catch (Exception exception){
-            log.warn("Error while parsing need status column color for izmir site: {}",site.getName());
+            log.warn("Error while parsing need status column color for {} site: {}",getCityName(),site.getName());
         }
         SiteStatus.SiteStatusLevel needLevel = convertToSiteStatusLevelForIzmir(needStatusColor);
 
@@ -98,7 +103,7 @@ public class IzmirSitesParser {
         try {
             note = (String) rowData.getValues().get(6).get("formattedValue");
         }catch(Exception exception){
-            log.warn("Error while parsing note column for izmir site: {}",site.getName());
+            log.warn("Error while parsing note column for {} site: {}",getCityName(),site.getName());
         }
 
 
@@ -178,7 +183,7 @@ public class IzmirSitesParser {
         }
 
         if (location.isEmpty()) {
-            log.warn("Location is null for {}", siteName);
+            log.warn("Could not create location for {}", siteName);
             return Optional.empty();
         }
 
@@ -202,7 +207,7 @@ public class IzmirSitesParser {
         String district = (String) rowData.getValues().get(0).get("formattedValue");
         Location location = new Location();
         location.setDistrict(district);
-        location.setCity(CITY_NAME);
+        location.setCity(getCityName());
         location.setAdditionalAddress("Bu alana adres tarifi al butonunu kullanınız.");
         try {
             List<Double> coordinates = spreadSheetUtils.getCoordinatesByUrl(mapUrl);
