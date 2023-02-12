@@ -124,7 +124,7 @@ public class IstanbulSitesParser {
         try{
             phone = (String) row.getValues().get(4).get("formattedValue");
         }catch(Exception ex){
-            phone = "";
+            phone = null;
         }
 
         if (phone != null) {
