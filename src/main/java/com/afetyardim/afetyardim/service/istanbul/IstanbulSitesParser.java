@@ -135,7 +135,7 @@ public class IstanbulSitesParser {
         try {
             lastUpdateTime = (String) row.getValues().get(5).get("formattedValue");
         }catch(Exception ex){
-            lastUpdateTime = "";
+            lastUpdateTime = null;
         }
         List<SiteStatus> newSiteStatuses = generateSiteStatus(needLevel);
         site.setLastSiteStatuses(newSiteStatuses);
