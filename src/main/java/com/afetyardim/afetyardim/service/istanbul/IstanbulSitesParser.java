@@ -57,7 +57,7 @@ public class IstanbulSitesParser {
                     district = null;
                 }
 
-                if (siteName == null || district == null) {
+                if (district == null) {
                     continue;
                 }
                 Optional<Site> existingSite = SiteUtils.findSiteByNameAndDistrict(siteName, district, istanbulSites);
