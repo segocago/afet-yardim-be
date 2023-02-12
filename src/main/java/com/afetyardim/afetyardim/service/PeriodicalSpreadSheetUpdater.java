@@ -39,10 +39,21 @@ public class PeriodicalSpreadSheetUpdater {
   private void parseIzmirSpreadsheet() {
     log.info("Start izmir spreadsheet parsing");
     try {
-      izmirSitesParser.parseIzmirSpreadsheet();
+      izmirSitesParser.parseSpreadsheet();
     } catch (IOException e) {
       throw new RuntimeException("Exception while parsing izmir spreadsheet", e);
     }
     log.info("Finish izmir spreadsheet parsing");
   }
+
+
+//  private void parseIstanbulSpreadsheet() {
+//    log.info("Start istanbul spreadsheet parsing");
+//    try {
+//      istanbulSpreadSheetParser.parseSpreadsheet();
+//    } catch (IOException e) {
+//      throw new RuntimeException("Exception while parsing izmir spreadsheet", e);
+//    }
+//    log.info("Finish istanbul spreadsheet parsing");
+//  }
 }
