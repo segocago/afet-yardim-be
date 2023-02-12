@@ -1,20 +1,28 @@
 package com.afetyardim.afetyardim.service.izmir;
 
-import com.afetyardim.afetyardim.model.*;
+import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
+import com.afetyardim.afetyardim.model.ActiveStatus;
+import com.afetyardim.afetyardim.model.Location;
+import com.afetyardim.afetyardim.model.Site;
+import com.afetyardim.afetyardim.model.SiteStatus;
+import com.afetyardim.afetyardim.model.SiteStatusType;
+import com.afetyardim.afetyardim.model.SiteType;
+import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.service.SiteService;
-import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
 import com.afetyardim.afetyardim.service.common.SiteUtils;
+import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
 import com.google.api.services.sheets.v4.model.Color;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.*;
-
-import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
 
 @Service
 @RequiredArgsConstructor
@@ -111,6 +119,7 @@ public class IzmirSitesParser {
         site.setLastSiteStatuses(newSiteStatuses);
         site.setActive(needLevel == SiteStatus.SiteStatusLevel.NEED_REQUIRED ||
             needLevel == SiteStatus.SiteStatusLevel.URGENT_NEED_REQUIRED ? true : false);
+        site.setActiveStatus(needLevel == SiteStatus.SiteStatusLevel.UNKNOWN ? ActiveStatus.UNKNOWN : ActiveStatus.ACTIVE);
 
         Optional<SiteUpdate> newSiteUpdate =
             generateNewSiteUpdate(site, newSiteStatuses, lastUpdateTime, needStatusText, note);
