@@ -21,7 +21,7 @@ import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
 @RequiredArgsConstructor
 @Slf4j
 public class IstanbulSitesParser {
-
+g
     private final SpreadSheetUtils spreadSheetUtils;
     private final SiteService siteService;
 
@@ -244,8 +244,6 @@ public class IstanbulSitesParser {
         }
 
         String activeNote = "";
-        // This can be improved
-        // rgb(255, 153, 0)
         if(activeNoteColor != null){
             if(activeNoteColor.getGreen() != null && compareFloats(activeNoteColor.getGreen(), 0.6f) &&
                     activeNoteColor.getRed() != null && compareFloats(activeNoteColor.getRed(), 1.0f)){
