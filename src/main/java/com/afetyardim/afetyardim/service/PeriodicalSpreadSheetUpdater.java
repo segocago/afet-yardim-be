@@ -24,6 +24,7 @@ public class PeriodicalSpreadSheetUpdater {
 
     parseAnkaraSpreadsheet();
     parseIzmirSpreadsheet();
+    parseIstanbulSpreadsheet();
   }
 
   private void parseAnkaraSpreadsheet() {
@@ -44,5 +45,15 @@ public class PeriodicalSpreadSheetUpdater {
       throw new RuntimeException("Exception while parsing izmir spreadsheet", e);
     }
     log.info("Finish izmir spreadsheet parsing");
+  }
+
+  private void parseIstanbulSpreadsheet() {
+    log.info("Start Istanbul spreadsheet parsing");
+    try {
+      izmirSitesParser.parseIzmirSpreadsheet();
+    } catch (IOException e) {
+      throw new RuntimeException("Exception while parsing Istanbul spreadsheet", e);
+    }
+    log.info("Finish Istanbul spreadsheet parsing");
   }
 }

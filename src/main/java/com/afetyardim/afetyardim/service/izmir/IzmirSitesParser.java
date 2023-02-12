@@ -26,9 +26,7 @@ public class IzmirSitesParser {
     private final SiteService siteService;
 
     private final static String IZMIR_SPREAD_SHEET_ID = "1pAUwGOfuu6mRUnsHs7uQrggAu8GQm6Z-r6M25lgBCNY";
-
     private final static String IZMIR_SPREAD_SHEET_RANGE = "A1:G100";
-
     private final static String CITY_NAME = "İzmir";
 
     public void parseIzmirSpreadsheet() throws IOException {
