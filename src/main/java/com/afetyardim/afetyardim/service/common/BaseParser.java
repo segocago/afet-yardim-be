@@ -1,11 +1,9 @@
 package com.afetyardim.afetyardim.service.common;
 
-import static com.afetyardim.afetyardim.service.common.SiteUtils.compareFloats;
 import com.afetyardim.afetyardim.model.ActiveStatus;
 import com.afetyardim.afetyardim.model.Location;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteStatus;
-import com.afetyardim.afetyardim.model.SiteStatusType;
 import com.afetyardim.afetyardim.model.SiteType;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.service.SiteService;
@@ -48,6 +46,12 @@ public abstract class BaseParser {
     public abstract Optional<String> getAdditionalAddress(RowData rowData);
 
     public abstract Optional<String> getContactInformation(RowData rowData);
+    public abstract Optional<String> getUpdateComment(RowData rowData);
+
+    public abstract Optional<Color> getNeedLevelColor(RowData rowData);
+    public abstract SiteStatus.SiteStatusLevel convertNeedColorToNeedLevel(Color color);
+
+    public abstract List<SiteStatus> generateSiteStatus(SiteStatus.SiteStatusLevel needLevel);
 
 
     public void parseSpreadsheet() throws IOException {
@@ -92,28 +96,16 @@ public abstract class BaseParser {
 
     public void updateSite(RowData rowData, Site site) {
 
-        String phone = (String) rowData.getValues().get(3).get("formattedValue");
-        if (phone != null) {
-            site.setContactInformation(phone);
+        Optional<String> contactInformation = getContactInformation(rowData);
+        if (contactInformation.isPresent()) {
+            site.setContactInformation(contactInformation.get());
         }
-        String lastUpdateTime = (String) rowData.getValues().get(4).get("formattedValue");
-
-        String needStatusText = (String) rowData.getValues().get(5).get("formattedValue");
-        Color needStatusColor = null;
-        try {
-             needStatusColor = rowData.getValues().get(5).getUserEnteredFormat().getBackgroundColor();
-        }catch (Exception exception){
-            log.warn("Error while parsing need status column color for {} site: {}",getCityName(),site.getName());
-        }
-        SiteStatus.SiteStatusLevel needLevel = convertToSiteStatusLevelForIzmir(needStatusColor);
 
 
-        String note ="";
-        try {
-            note = (String) rowData.getValues().get(6).get("formattedValue");
-        }catch(Exception exception){
-            log.warn("Error while parsing note column for {} site: {}",getCityName(),site.getName());
-        }
+
+        Optional<Color> needStatusColor = getNeedLevelColor(rowData);
+        SiteStatus.SiteStatusLevel needLevel = needStatusColor.isPresent() ?
+            convertNeedColorToNeedLevel(needStatusColor.get()) : SiteStatus.SiteStatusLevel.UNKNOWN;
 
 
         List<SiteStatus> newSiteStatuses = generateSiteStatus(needLevel);
@@ -123,7 +115,7 @@ public abstract class BaseParser {
         site.setActiveStatus(needLevel == SiteStatus.SiteStatusLevel.UNKNOWN ? ActiveStatus.UNKNOWN : ActiveStatus.ACTIVE);
 
         Optional<SiteUpdate> newSiteUpdate =
-            generateNewSiteUpdate(site, newSiteStatuses, lastUpdateTime, needStatusText, note);
+            generateNewSiteUpdate(site, newSiteStatuses,rowData);
         if (newSiteUpdate.isPresent()) {
             site.getUpdates().add(newSiteUpdate.get());
         }
@@ -131,19 +123,16 @@ public abstract class BaseParser {
 
     private Optional<SiteUpdate> generateNewSiteUpdate(Site site,
                                                        List<SiteStatus> siteStatuses,
-                                                       String lastUpdateTime,
-                                                       String needStatusText,
-                                                       String note) {
+                                                       RowData rowData) {
 
         String concatenatedNote = "";
-        if (lastUpdateTime != null) {
-            concatenatedNote += "(" + lastUpdateTime + ")";
+        Optional<String> lastUpdateTime = getUpdateComment(rowData);
+        if (lastUpdateTime.isPresent()) {
+            concatenatedNote += "(" + lastUpdateTime.get() + ")";
         }
-        if (needStatusText != null) {
-            concatenatedNote += " - " + needStatusText;
-        }
-        if (note != null) {
-            concatenatedNote += " - " + note;
+        Optional<String> updateComment = getUpdateComment(rowData);
+        if(updateComment.isPresent()){
+            concatenatedNote += " - " + updateComment.get();
         }
 
         if (site.getUpdates().size() != 0 &&
@@ -158,32 +147,7 @@ public abstract class BaseParser {
         return Optional.of(newSiteUpdate);
     }
 
-    private List<SiteStatus> generateSiteStatus(SiteStatus.SiteStatusLevel needLevel) {
 
-        return List.of(new SiteStatus(SiteStatusType.MATERIAL, needLevel),
-            new SiteStatus(SiteStatusType.HUMAN_HELP, needLevel),
-            new SiteStatus(SiteStatusType.FOOD, needLevel),
-            new SiteStatus(SiteStatusType.PACKAGE, needLevel));
-    }
-
-    private SiteStatus.SiteStatusLevel convertToSiteStatusLevelForIzmir(Color color) {
-
-        if (color == null) {
-            return SiteStatus.SiteStatusLevel.UNKNOWN;
-        }
-
-        // Red, not needed
-        if (color.getRed() != null && compareFloats(color.getRed(), Float.valueOf(1.0f))) {
-
-            return SiteStatus.SiteStatusLevel.NO_NEED_REQUIRED;
-        }
-
-        // Green, help needed
-        if (color.getGreen() != null && compareFloats(color.getGreen(), Float.valueOf(1.0f))) {
-            return SiteStatus.SiteStatusLevel.NEED_REQUIRED;
-        }
-        return SiteStatus.SiteStatusLevel.UNKNOWN;
-    }
 
     public Optional<Site> createSite(RowData rowData) {
         String siteName = getSiteName(rowData);
