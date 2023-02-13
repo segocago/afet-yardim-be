@@ -6,6 +6,7 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -81,6 +82,21 @@ public class Site {
   @Column(length = 32, columnDefinition = "varchar(255) default 'UNKNOWN'")
   @Enumerated(EnumType.STRING)
   private ActiveStatus activeStatus = ActiveStatus.UNKNOWN;
+
+  public boolean didSiteHaveUpdateInLastPeriod(){
+    Optional<SiteUpdate> lastSiteUpdate = getLastSiteUpdate();
+    LocalDateTime lastDay = LocalDateTime.now().minusDays(1);
+    if(lastSiteUpdate.isPresent()){
+      return lastSiteUpdate.get().getCreateDateTime().isAfter(lastDay);
+    }
+    return getCreateDateTime().isAfter(lastDay);
+
+  }
+
+  public Optional<SiteUpdate> getLastSiteUpdate(){
+    return updates.size() == 0 ? Optional.empty() :  Optional.of(updates.get(updates.size() - 1));
+  }
+
 
 
   public void addSiteUpdate(SiteUpdate siteUpdate) {

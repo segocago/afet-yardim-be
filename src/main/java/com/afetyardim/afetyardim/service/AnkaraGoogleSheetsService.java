@@ -138,6 +138,11 @@ public class AnkaraGoogleSheetsService {
       Optional<SiteUpdate> newSiteUpdate = generateNewSiteUpdate(site, newSiteStatuses, activeNote, note);
       if (newSiteUpdate.isPresent()) {
         site.getUpdates().add(newSiteUpdate.get());
+      }else {
+        if(!site.didSiteHaveUpdateInLastPeriod() && site.getActiveStatus() != ActiveStatus.UNKNOWN){
+          log.warn("Site {} did not get any update in last 24 hours. Moving to unknown state.", site.getName());
+          site.setActiveStatus(ActiveStatus.UNKNOWN);
+        }
       }
     } else {
 
