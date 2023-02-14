@@ -228,7 +228,7 @@ public class IzmirSitesParser {
             location.setLatitude(coordinates.get(0));
             location.setLongitude(coordinates.get(1));
         } catch (Exception exception) {
-            log.error("Could not get coordinates by map url {}", mapUrl, exception);
+            log.error("Could not get coordinates by map url {}", mapUrl);
             return Optional.empty();
         }
         return Optional.of(location);

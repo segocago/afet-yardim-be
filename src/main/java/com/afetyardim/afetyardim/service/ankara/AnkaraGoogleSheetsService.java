@@ -1,4 +1,4 @@
-package com.afetyardim.afetyardim.service;
+package com.afetyardim.afetyardim.service.ankara;
 
 import com.afetyardim.afetyardim.model.ActiveStatus;
 import com.afetyardim.afetyardim.model.Location;
@@ -6,6 +6,7 @@ import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteStatus;
 import com.afetyardim.afetyardim.model.SiteStatusType;
 import com.afetyardim.afetyardim.model.SiteUpdate;
+import com.afetyardim.afetyardim.service.SiteService;
 import com.afetyardim.afetyardim.service.common.SpreadSheetUtils;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -180,7 +181,7 @@ public class AnkaraGoogleSheetsService {
       location.setLatitude(coordinates.get(0));
       location.setLongitude(coordinates.get(1));
     } catch (Exception exception) {
-      log.error("Could not get coordinates by map url {}", mapUrl, exception);
+      log.error("Could not get coordinates by map url {}", mapUrl);
       return Optional.empty();
     }
     return Optional.of(location);
