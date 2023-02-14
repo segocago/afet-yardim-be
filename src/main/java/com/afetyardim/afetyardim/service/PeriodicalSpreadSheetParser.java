@@ -1,5 +1,6 @@
 package com.afetyardim.afetyardim.service;
 
+import com.afetyardim.afetyardim.service.ankara.AnkaraGoogleSheetsService;
 import com.afetyardim.afetyardim.service.istanbul.IstanbulSitesParser;
 import com.afetyardim.afetyardim.service.izmir.IzmirSitesParser;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PeriodicalSpreadSheetUpdater {
+public class PeriodicalSpreadSheetParser {
 
   private final long PARSER_PERIOD_IN_MILLIS = 5 * 60 * 1000;
   private final long INITIAL_SCHEDULED_JOB_DELAY_IN_MILLIS = 30 * 1000;

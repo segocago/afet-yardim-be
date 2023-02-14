@@ -52,7 +52,7 @@ public class IzmirSitesParser {
         List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
         //Remove header row
         rows.remove(0);
-        Collection<Site> izmirSites = siteService.getSites(Optional.of(getCityName()), Optional.empty());
+        Collection<Site> izmirSites = siteService.getSites(Optional.of(getCityName()));
         List<Site> newSites = new ArrayList<>();
         int updatedSiteCount = 0;
 
@@ -228,7 +228,7 @@ public class IzmirSitesParser {
             location.setLatitude(coordinates.get(0));
             location.setLongitude(coordinates.get(1));
         } catch (Exception exception) {
-            log.error("Could not get coordinates by map url {}", mapUrl, exception);
+            log.error("Could not get coordinates by map url {}", mapUrl);
             return Optional.empty();
         }
         return Optional.of(location);
