@@ -1,10 +1,13 @@
 package com.afetyardim.afetyardim.controller;
 
+import com.afetyardim.afetyardim.dto.SiteDTO;
+import com.afetyardim.afetyardim.mapper.SiteMapper;
 import com.afetyardim.afetyardim.model.Site;
 import com.afetyardim.afetyardim.model.SiteUpdate;
 import com.afetyardim.afetyardim.service.SiteService;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +47,12 @@ public class SiteController {
   public Site addSiteUpdate(@PathVariable long siteId, @RequestBody SiteUpdate newSiteUpdate) {
     newSiteUpdate.setCreateDateTime(LocalDateTime.now());
     return siteService.addSiteUpdate(siteId, newSiteUpdate);
+  }
+
+  @GetMapping("/v2")
+  public List<SiteDTO> getSites(@RequestParam Optional<String> cityFilter) {
+    Collection<Site> sites = siteService.getSites(cityFilter,Optional.empty());
+    return sites.stream().map(SiteMapper::convertModelToDTO).toList();
   }
 
 }
