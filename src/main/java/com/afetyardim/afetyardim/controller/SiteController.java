@@ -28,8 +28,8 @@ public class SiteController {
 //  }
 
   @GetMapping
-  public Collection<Site> getSites(@RequestParam Optional<String> cityFilter, Optional<Boolean> verifiedFilter) {
-    Collection<Site> sites = siteService.getSites(cityFilter, verifiedFilter);
+  public Collection<Site> getSites(@RequestParam Optional<String> cityFilter) {
+    Collection<Site> sites = siteService.getSites(cityFilter);
     return sites;
   }
 
@@ -45,8 +45,8 @@ public class SiteController {
 //  }
 
   @GetMapping("/v2")
-  public List<SiteDTO> getSites(@RequestParam Optional<String> cityFilter) {
-    Collection<Site> sites = siteService.getSites(cityFilter,Optional.empty());
+  public List<SiteDTO> getSitesV2(@RequestParam Optional<String> cityFilter) {
+    Collection<Site> sites = siteService.getSites(cityFilter);
     return sites.stream().map(SiteMapper::convertModelToDTO).toList();
   }
 

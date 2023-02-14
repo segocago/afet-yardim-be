@@ -19,18 +19,10 @@ public class SiteService {
     return siteRepository.save(newSite);
   }
 
-  public Collection<Site> getSites(Optional<String> cityFilter, Optional<Boolean> verifiedFilter) {
+  public Collection<Site> getSites(Optional<String> cityFilter) {
 
-    if (cityFilter.isPresent() && verifiedFilter.isEmpty()) {
+    if (cityFilter.isPresent()) {
       return siteRepository.findByLocationCity(cityFilter.get());
-    }
-
-    if (cityFilter.isPresent() && verifiedFilter.isPresent()) {
-      return siteRepository.findByLocationCityAndVerified(cityFilter.get(), verifiedFilter.get());
-    }
-
-    if (cityFilter.isEmpty() && verifiedFilter.isPresent()) {
-      return siteRepository.findByVerified(verifiedFilter.get());
     }
     return siteRepository.findAll();
   }

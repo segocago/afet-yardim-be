@@ -49,7 +49,7 @@ public class AnkaraGoogleSheetsService {
 
     log.info("Start ankara spread sheet update");
 
-    Collection<Site> ankaraSites = siteService.getSites(Optional.of("Ankara"), Optional.empty());
+    Collection<Site> ankaraSites = siteService.getSites(Optional.of("Ankara"));
     Spreadsheet spreadsheet = getSpreadSheet(ANKARA_SPREAD_SHEET_ID, ANKARA_SPREAD_SHEET_RANGE);
 
     List<RowData> rows = spreadsheet.getSheets().get(0).getData().get(0).getRowData();
